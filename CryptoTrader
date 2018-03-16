@@ -8,6 +8,13 @@ echo 2\) Buy now and sell if price increases above x%. Check every y minutes.
 
 read strat
 
+[ if $strat -ne 1 -a $strat -ne 2 ]
+	then
+		echo Not a valid strategy. Exiting program.
+		sleep 7s
+		exit 0
+fi
+
 clear
 
 echo Getting prices...
@@ -42,6 +49,7 @@ if [ $x -eq 9 ]
 elif [ $x -ne 1 -a $x -ne 2 -a $x -ne 3 -a $x -ne 4 -a $x -ne 5 -a $x -ne 6 -a $x -ne 7 -a $x -ne 8 -a $x -ne 9 ]
 	then
 		echo Not a valid option. Please restart program.
+		sleep 7s
 		exit 0
 fi
 
@@ -149,25 +157,410 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 				fi
 		elif [ $x -eq 2 ]
 			then
-				echo You have selected Ethereum.
+				if [ $strat -eq 2 ]
+					then
+						echo How many Ethereum coins do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$ethprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 5) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $ethprice" | bc) / $ethprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 5) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $ethprice" | bc) / $ethprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Ethereum coins at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 5) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $ethprice" | bc) / $ethprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Ethereum coin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Ethereum coin(s). Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==5)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Ethereum coin(s) for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 3 ]
 			then
-				echo You have selected Litecoin.
+				if [ $strat -eq 2 ]
+					then
+						echo How many Litecoins do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$liteprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 6) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $liteprice" | bc) / $liteprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 6) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $liteprice" | bc) / $liteprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Litecoins at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 6) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $liteprice" | bc) / $liteprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Litecoin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Litecoin. Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==6)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Litecoins for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 4 ]
 			then
-				echo You have selected Bitcoin Cash.
+				if [ $strat -eq 2 ]
+					then
+						echo How much Bitcoin cash do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$bchprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 7) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $bchprice" | bc) / $bchprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 7) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $bchprice" | bc) / $bchprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Bitcoin cash at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 7) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $bchprice" | bc) / $bchprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Bitcoin Cash. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Bitcoin Cash. Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==7)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Bitcoin cash for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 5 ]
 			then
-				echo You have selected Dash.
+				if [ $strat -eq 2 ]
+					then
+						echo How much Dash coin do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$dashprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 8) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $dashprice" | bc) / $dashprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 8) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $dashprice" | bc) / $dashprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Dash coin(s) at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 8) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $dashprice" | bc) / $dashprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Dash coin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Dash coin(s). Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==8)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Dash coin(s) for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 6 ]
 			then
-				echo You have selected Ripple.
+				if [ $strat -eq 2 ]
+					then
+						echo How much Ripple coin do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$rippleprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 9) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $rippleprice" | bc) / $rippleprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 9) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $rippleprice" | bc) / $rippleprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Ripple coin(s) at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 9) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $rippleprice" | bc) / $rippleprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Dash coin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Ripple coin(s). Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==9)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Ripple coin(s) for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 7  ]
 			then
-				echo You have selected Digibyte.
+				if [ $strat -eq 2 ]
+					then
+						echo How much Digibyte coin do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$digiprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $digiprice" | bc) / $digiprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $digiprice" | bc) / $digiprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Digibyte coin(s) at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $digiprice" | bc) / $digiprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Digibyte coin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Digibyte coin(s). Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==10)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Digibyte coin(s) for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		elif [ $x -eq 8 ]
 			then
-				echo You have selected Stellar.
+				if [ $strat -eq 2 ]
+					then
+						echo How much Stellar coin do you want to purchase?
+						read coinbuy
+						worth=$(echo "scale=2;$stellarprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 11) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $stellarprice" | bc) / $stellarprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
+						do
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $stellarprice" | bc) / $stellarprice" | bc )*100" | bc)
+							
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Digibyte coin(s) at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
+							fi
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 11) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $stellarprice" | bc) / $stellarprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
+								then
+								echo Price is now \$$newprice for one Stellar coin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Stellar coin(s). Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==11)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Stellar coin(s) for a total of \$$sold. A profit of \$$profit!
+
+									
+						
+							fi
+							done
+				fi
 		fi
 fi
 
