@@ -8,13 +8,6 @@ echo 2\) Buy now and sell if price increases above x%. Check every y minutes.
 
 read strat
 
-[ if $strat -ne 1 -a $strat -ne 2 ]
-	then
-		echo Not a valid strategy. Exiting program.
-		sleep 7s
-		exit 0
-fi
-
 clear
 
 echo Getting prices...
@@ -42,6 +35,7 @@ echo 8\) Stellar \| Current Price: \$$stellarprice
 echo 9\) Quit Program
 
 read x
+clear
 
 if [ $x -eq 9 ]
 	then
@@ -91,6 +85,10 @@ then
 	echo How long do you want to be checking prices for \(in minutes\)?
 	read finishtime
 	endtime=$(echo "scale=2;$finishtime*60" | bc)
+else
+	echo That is not a valid program. Please restart program.
+	sleep 7s
+	exit 0
 fi
 
 
@@ -200,13 +198,13 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
-								echo You just bought \$$value worth of Ethereum coin(s). Now holding for $afterbuy minutes.
+								echo You just bought \$$value worth of Ethereum coins. Now holding for $afterbuy minutes.
 								sleep $aftersecs
 								clear
 								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==5)print$5}')
 								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
 								profit=$(echo "scale=2;$sold - $value" | bc)
-								echo After $afterbuy minutes, you have sold your Ethereum coin(s) for a total of \$$sold. A profit of \$$profit!
+								echo After $afterbuy minutes, you have sold your Ethereum coins for a total of \$$sold. A profit of \$$profit!
 
 									
 						
@@ -348,7 +346,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							then
 								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
 								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
-								echo You have sold your $coinbuy Dash coin(s) at $(date)
+								echo You have sold your $coinbuy Dash coins at $(date)
 								echo Your profit from this is \$$profit!
 								break
 							else	
@@ -374,13 +372,13 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
-								echo You just bought \$$value worth of Dash coin(s). Now holding for $afterbuy minutes.
+								echo You just bought \$$value worth of Dash coins. Now holding for $afterbuy minutes.
 								sleep $aftersecs
 								clear
 								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==8)print$5}')
 								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
 								profit=$(echo "scale=2;$sold - $value" | bc)
-								echo After $afterbuy minutes, you have sold your Dash coin(s) for a total of \$$sold. A profit of \$$profit!
+								echo After $afterbuy minutes, you have sold your Dash coins for a total of \$$sold. A profit of \$$profit!
 
 									
 						
@@ -406,7 +404,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							then
 								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
 								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
-								echo You have sold your $coinbuy Ripple coin(s) at $(date)
+								echo You have sold your $coinbuy Ripple coins at $(date)
 								echo Your profit from this is \$$profit!
 								break
 							else	
@@ -432,13 +430,13 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
-								echo You just bought \$$value worth of Ripple coin(s). Now holding for $afterbuy minutes.
+								echo You just bought \$$value worth of Ripple coins. Now holding for $afterbuy minutes.
 								sleep $aftersecs
 								clear
 								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==9)print$5}')
 								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
 								profit=$(echo "scale=2;$sold - $value" | bc)
-								echo After $afterbuy minutes, you have sold your Ripple coin(s) for a total of \$$sold. A profit of \$$profit!
+								echo After $afterbuy minutes, you have sold your Ripple coins for a total of \$$sold. A profit of \$$profit!
 
 									
 						
@@ -464,7 +462,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							then
 								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
 								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
-								echo You have sold your $coinbuy Digibyte coin(s) at $(date)
+								echo You have sold your $coinbuy Digibyte coins at $(date)
 								echo Your profit from this is \$$profit!
 								break
 							else	
@@ -490,13 +488,13 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
-								echo You just bought \$$value worth of Digibyte coin(s). Now holding for $afterbuy minutes.
+								echo You just bought \$$value worth of Digibyte coins. Now holding for $afterbuy minutes.
 								sleep $aftersecs
 								clear
 								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==10)print$5}')
 								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
 								profit=$(echo "scale=2;$sold - $value" | bc)
-								echo After $afterbuy minutes, you have sold your Digibyte coin(s) for a total of \$$sold. A profit of \$$profit!
+								echo After $afterbuy minutes, you have sold your Digibyte coins for a total of \$$sold. A profit of \$$profit!
 
 									
 						
@@ -522,7 +520,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							then
 								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
 								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
-								echo You have sold your $coinbuy Digibyte coin(s) at $(date)
+								echo You have sold your $coinbuy Digibyte coins at $(date)
 								echo Your profit from this is \$$profit!
 								break
 							else	
@@ -548,13 +546,13 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
-								echo You just bought \$$value worth of Stellar coin(s). Now holding for $afterbuy minutes.
+								echo You just bought \$$value worth of Stellar coins. Now holding for $afterbuy minutes.
 								sleep $aftersecs
 								clear
 								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==11)print$5}')
 								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
 								profit=$(echo "scale=2;$sold - $value" | bc)
-								echo After $afterbuy minutes, you have sold your Stellar coin(s) for a total of \$$sold. A profit of \$$profit!
+								echo After $afterbuy minutes, you have sold your Stellar coins for a total of \$$sold. A profit of \$$profit!
 
 									
 						
