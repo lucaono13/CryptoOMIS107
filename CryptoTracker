@@ -1,0 +1,36 @@
+#!/bin/bash
+
+echo How many times would you like to track the price?
+read time
+
+echo Interval of time between each price recording?
+read minutes
+
+echo Date/Time, BTC, ETH, LTC, BCH, DSH, XRP, DGB, XLM > /home/leo/trackingsystem.xls
+
+#Declare variable for line count of tracking system file
+linecount=$(cat /home/leo/trackingsystem.xls| wc -l)
+
+while [ $linecount -le $time ]
+do
+
+        cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed "s/\x0f//g" > /home/leo/pricerecord.xls
+        #Declaring variables for prices of each coin
+                BTCUSD=$(cat pricerecord.xls| awk '{if (NR==4) print$5}')
+                ETHUSD=$(cat pricerecord.xls| awk '{if (NR==5) print$5}')
+                LTCUSD=$(cat pricerecord.xls| awk '{if (NR==6) print$5}')
+                BCHUSD=$(cat pricerecord.xls| awk '{if (NR==7) print$6}')
+                DSHUSD=$(cat pricerecord.xls| awk '{if (NR==8) print$5}')
+                XRPUSD=$(cat pricerecord.xls| awk '{if (NR==9) print$5}')
+                DGBUSD=$(cat pricerecord.xls| awk '{if (NR==10) print$5}')
+                XLMUSD=$(cat pricerecord.xls| awk '{if (NR==11) print$5}')
+
+                #Outlining the output below
+                echo $(date), $BTCUSD, $ETHUSD, $LTCUSD, $BCHUSD, $DSHUSD, $XRPUSD, $DGBUSD, $XLMUSD >> /home/leo/trackingsystem.xls
+
+                #Count lines of file 
+                linecount=$(cat /home/leo/trackingsystem.xls| wc -l)
+        sleep $minutes
+done
+
+echo Your file is ready. 
