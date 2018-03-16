@@ -1,0 +1,71 @@
+#!/bin/bash
+
+echo What type of trading stratgey do you want to use?
+echo 1\) Buy when price increases x% in past y minutes and sell after z minutes.
+echo 2\) Buy now and sell if price increases above x% in y minutes.
+echo 3\) 
+
+read strat
+
+echo Getting prices...
+cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" > prices.txt
+btcprice=$(cat prices.txt | awk '{if ($2 ~ /Bitcoin/ && $3 !~ /Cash/) print $5}')
+ethprice=$(cat prices.txt | awk '{if ($2 ~ /Ethereum/) print $5}')
+liteprice=$(cat prices.txt | awk '{if ($2 ~ /Litecoin/) print $5}')
+bchprice=$(cat prices.txt | awk '{if ($2 ~ /Bitcoin/ && $3 ~ /Cash/) print $6}')
+dashprice=$(cat prices.txt | awk '{if ($2 ~ /Dash/) print $5}')
+rippleprice=$(cat prices.txt | awk '{if ($2 ~ /Ripple/) print $5}')
+digiprice=$(cat prices.txt | awk '{if ($2 ~ /Digibyte/) print $5}')
+stellarprice=$(cat prices.txt | awk '{if ($2 ~ /Stellar/) print $5}')
+
+
+
+echo Select which coin to trade.
+echo 1\) Bitcoin \| Current Price: \$$btcprice
+echo 2\) Ethereum \| Current Price: \$$ethprice
+echo 3\) Litecoin \| Current Price: \$$liteprice
+echo 4\) Bitcoin Cash \| Current Price: \$$bchprice 
+echo 5\) Dash \| Current Price: \$$dashprice
+echo 6\) Ripple \| Current Price: \$$rippleprice
+echo 7\) Digibyte \| Current Price: \$$digiprice
+echo 8\) Stellar \| Current Price: \$$stellarprice
+
+read x
+
+if [ $strat -eq 1 -o $strat -eq 2 ]
+	then
+		if [ $x -eq 1 ]
+			then
+				if [ $strat -eq 2 ]
+					then
+						echo How many coins do you want to buy?
+						read btcbuy
+						btcusd=$(echo "scale=2;$btcprice * $btcbuy" | bc)
+						echo You now have $btcbuy Bitcoins\; total in USD = \$$btcusd
+				fi
+		elif [ $x -eq 2 ]
+			then
+				echo You have selected Ethereum.
+		elif [ $x -eq 3 ]
+			then
+				echo You have selected Litecoin.
+		elif [ $x -eq 4 ]
+			then
+				echo You have selected Bitcoin Cash.
+		elif [ $x -eq 5 ]
+			then
+				echo You have selected Dash.
+		elif [ $x -eq 6 ]
+			then
+				echo You have selected Ripple.
+		elif [ $x -eq 7  ]
+			then
+				echo You have selected Digibyte.
+		elif [ $x -eq 8 ]
+			then
+				echo You have selected Stellar.
+		else
+			echo Not a valid coin.
+		fi
+fi
+clear
