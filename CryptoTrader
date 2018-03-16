@@ -32,8 +32,18 @@ echo 5\) Dash \| Current Price: \$$dashprice
 echo 6\) Ripple \| Current Price: \$$rippleprice
 echo 7\) Digibyte \| Current Price: \$$digiprice
 echo 8\) Stellar \| Current Price: \$$stellarprice
+echo 9\) Quit Program
 
 read x
+
+if [ $x -eq 9 ]
+	then
+		exit 0
+elif [ $x -ne 1 -a $x -ne 2 -a $x -ne 3 -a $x -ne 4 -a $x -ne 5 -a $x -ne 6 -a $x -ne 7 -a $x -ne 8 -a $x -ne 9 ]
+	then
+		echo Not a valid option. Please restart program.
+		exit 0
+fi
 
 if [ $strat -eq 2 ]
 then
@@ -94,7 +104,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
 							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc )*100" | bc)
 							
-							if (($(echo "$percentincrease >= $percent" | bc)))
+							if [ $(bc <<< "percentincrease" ) > "percent" ]
 							then
 								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
 								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
@@ -118,10 +128,10 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}'))
 							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc ) * 100" | bc)
 							clear
-							if (($(echo "$percentincrease < $priceincrease" | bc)))
+							if (($(echo "$percentincrease $priceincrease" | awk '{print($1 > $2)}')))
 								then
 								echo Price is now \$$newprice for one Bitcoin. There has only been a price change of $priceincreaseper%.
-							elif (($(echo "$percentincrease >= $priceincrease" | bc)))
+							elif (($(echo "$percentincrease >= $priceincrease" | bc -l)))
 								then
 								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
 								echo You just bought \$$value worth of Bitcoin. Now holding for $afterbuy minutes.
@@ -158,8 +168,6 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 		elif [ $x -eq 8 ]
 			then
 				echo You have selected Stellar.
-		else
-			echo Not a valid coin.
 		fi
 fi
 
