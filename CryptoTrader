@@ -3,9 +3,8 @@
 clear
 
 echo What type of trading stratgey do you want to use?
-echo 1\) Buy when price increases x% in past y minutes and sell after z minutes.
+echo 1\) Buy when price increases x% in the next y minutes and sell after z minutes.
 echo 2\) Buy now and sell if price increases above x%. Check every y minutes.
-echo 3\) 
 
 read strat
 
@@ -40,11 +39,42 @@ if [ $strat -eq 2 ]
 then
 	echo How often do you want to check the price of the coin \(in minutes\)?
 	read interval
+	clear
 
 	echo At what percent increase from the buying price do you want to sell the coin at?
 	read percent
+	clear
 
+	echo For how long do you want to be automatically checking prices \(in minutes\)?
+	read maxtime
+	end=$(echo "scale=2;$maxtime*60" | bc)
+	clear
+
+elif [ $strat -eq 1 ]
+then
+	echo In how many minutes do you want to check the price?
+	read checktime
+	checkseconds=$(echo "scale=2;$checktime*60" | bc)
+	clear
+	
+	echo How much do you want the price to increase \(in a percentage\)?
+	read priceincrease
+	clear
+
+	echo How many coins do you want to buy?
+	read coinstobuy
+	clear
+
+	echo How long after you purchase the coin do you want to hold on to it until you sell it \(in minutes\)?
+	read afterbuy
+	aftersecs=$(echo "scale=2;$afterbuy*60" | bc)
+	clear
+
+	echo How long do you want to be checking prices for \(in minutes\)?
+	read finishtime
+	endtime=$(echo "scale=2;$finishtime*60" | bc)
 fi
+
 
 
 if [ $strat -eq 1 -o $strat -eq 2 ]
@@ -54,24 +84,58 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 				if [ $strat -eq 2 ]
 					then
 						echo How many Bitcoins do you want to purchase?
-						read btcbuy
-						btcusd=$(echo "scale=2;$btcprice * $btcbuy" | bc )
-						newbtcprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
-						percentincrease=$(echo "$(echo "scale=2;$newbtcprice - $btcprice" | bc) / $btcprice" | bc )
-						while (($(echo "$percentincrease <= $percent" | bc)))
+						read coinbuy
+						worth=$(echo "scale=2;$btcprice * $coinbuy" | bc )
+						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
+						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc ) * 100" | bc)
+						while [ $SECONDS -lt $end ]
 						do
-							newbtcprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
-							percentincrease=$(echo "$(echo "scale=2;$newbtcprice - $btcprice" | bc) / $btcprice" | bc )
+							echo Checking prices now...
+							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
+							percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc )*100" | bc)
+							
 							if (($(echo "$percentincrease >= $percent" | bc)))
-								then
-									btcsellrevenue=$(echo "scale=2;$newbtcprice * $btcbuy" | bc)
-									btcprofit=$(echo "scale=2;$btcsellrevenue - $btcusd" | bc)
-									echo You have sold your $btcbuy Bitcoins!
-									echo Your profit from this is \$$btcprofit!
+							then
+								sellrevenue=$(echo "scale=2;$newprice * $coinbuy" | bc)
+								profit=$(echo "scale=2;$sellrevenue - $worth" | bc)
+								echo You have sold your $coinbuy Bitcoins at $(date)
+								echo Your profit from this is \$$profit!
+								break
+							else	
+								echo Price has only changed by $percentincrease% so far.
 							fi
-						sleep $(echo "scale=2;$interval * 60" | bc)
-						done
+							sleep $(echo "scale=2;$interval * 60" | bc)
+							echo
+						done				
+				elif [ $strat -eq 1 ]
+					then
+						while [ $SECONDS -lt $endtime ]
+							do
+							echo Going to check prices in $checktime minutes.
+							sleep $checkseconds
+							echo Checking price now...
+							
+							newprice=$(echo $(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}'))
+							priceincreaseper=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc ) * 100" | bc)
+							clear
+							if (($(echo "$percentincrease < $priceincrease" | bc)))
+								then
+								echo Price is now \$$newprice for one Bitcoin. There has only been a price change of $priceincreaseper%.
+							elif (($(echo "$percentincrease >= $priceincrease" | bc)))
+								then
+								value=$(echo "scale=2;$coinstobuy*$newprice" | bc)
+								echo You just bought \$$value worth of Bitcoin. Now holding for $afterbuy minutes.
+								sleep $aftersecs
+								clear
+								newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|sed -r "s/\x0f//g"|awk '{if(NR==4)print$5}')
+								sold=$(echo "scale=2;$newprice*$coinstobuy" | bc)
+								profit=$(echo "scale=2;$sold - $value" | bc)
+								echo After $afterbuy minutes, you have sold your Bitcoins for a total of \$$sold. A profit of \$$profit!
+
+									
 						
+							fi
+							done
 				fi
 		elif [ $x -eq 2 ]
 			then
@@ -98,3 +162,4 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 			echo Not a valid coin.
 		fi
 fi
+
