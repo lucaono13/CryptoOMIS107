@@ -1,8 +1,8 @@
 #!/bin/bash
 
 clear
-
-echo What type of trading stratgey do you want to use?
+#Ask for what trading strategy
+echo What type of trading strategy do you want to use?
 echo 1\) Buy when price increases x% in the next y minutes and sell after z minutes.
 echo 2\) Buy now and sell if price increases above x%. Check every y minutes.
 
@@ -11,6 +11,7 @@ read strat
 clear
 
 echo Getting prices...
+#Read in the prices for each price into a txt file. Then get each price separately.
 cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" > prices.txt
 btcprice=$(cat prices.txt | awk '{if ($2 ~ /Bitcoin/ && $3 !~ /Cash/) print $5}')
 ethprice=$(cat prices.txt | awk '{if ($2 ~ /Ethereum/) print $5}')
@@ -23,6 +24,7 @@ stellarprice=$(cat prices.txt | awk '{if ($2 ~ /Stellar/) print $5}')
 
 clear
 
+#Select the coin to trade, while showing the current price.
 echo Select which coin to trade.
 echo 1\) Bitcoin \| Current Price: \$$btcprice
 echo 2\) Ethereum \| Current Price: \$$ethprice
@@ -37,16 +39,17 @@ echo 9\) Quit Program
 read x
 clear
 
+#If an input equals 9 then exit the program, and if it equals above 10 or isn't a number, then it will exit the program.
 if [ $x -eq 9 ]
 	then
 		exit 0
-elif [ $x -ne 1 -a $x -ne 2 -a $x -ne 3 -a $x -ne 4 -a $x -ne 5 -a $x -ne 6 -a $x -ne 7 -a $x -ne 8 -a $x -ne 9 ]
+elif [ $x -ge 10 ]
 	then
 		echo Not a valid option. Please restart program.
 		sleep 7s
 		exit 0
 fi
-
+#Questions for each strategy
 if [ $strat -eq 2 ]
 then
 	echo How often do you want to check the price of the coin \(in minutes\)?
@@ -97,6 +100,9 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 	then
 		if [ $x -eq 1 ]
 			then
+				#This is the same code for every coin. If the strategy equals 2, it asks how many coins they want to buy.
+				#Then it calculates the worth of the coin total. After it grabs the newest price and calculates the price increase.
+				#It keeps checking the prices every interval as the user inputed.
 				if [ $strat -eq 2 ]
 					then
 						echo How many Bitcoins do you want to purchase?
@@ -104,7 +110,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$btcprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $btcprice" | bc) / $btcprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 4) print $5}')
@@ -125,7 +131,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -162,7 +168,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$ethprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 5) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $ethprice" | bc) / $ethprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 5) print $5}')
@@ -183,7 +189,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -220,7 +226,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$liteprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 6) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $liteprice" | bc) / $liteprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 6) print $5}')
@@ -241,7 +247,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -278,7 +284,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$bchprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 7) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $bchprice" | bc) / $bchprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 7) print $5}')
@@ -299,7 +305,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -336,7 +342,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$dashprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 8) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $dashprice" | bc) / $dashprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 8) print $5}')
@@ -357,7 +363,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -394,7 +400,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$rippleprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 9) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $rippleprice" | bc) / $rippleprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 9) print $5}')
@@ -415,7 +421,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -452,7 +458,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$digiprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $digiprice" | bc) / $digiprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
@@ -473,7 +479,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
@@ -510,7 +516,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						worth=$(echo "scale=2;$stellarprice * $coinbuy" | bc )
 						newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 11) print $5}')
 						percentincrease=$(echo "scale=2;$(echo "scale=2;$(echo "scale=2;$newprice - $stellarprice" | bc) / $stellarprice" | bc ) * 100" | bc)
-						while [ $SECONDS -lt $end ]
+						while [ $(bc <<< "SECONDS" ) > "end" ]
 						do
 							echo Checking prices now...
 							newprice=$(cryptowatch | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | sed -r "s/\x0f//g" | awk '{if (NR == 10) print $5}')
@@ -531,7 +537,7 @@ if [ $strat -eq 1 -o $strat -eq 2 ]
 						done				
 				elif [ $strat -eq 1 ]
 					then
-						while [ $SECONDS -lt $endtime ]
+						while [ $(bc <<< "percentincrease" ) > "endtime" ]
 							do
 							echo Going to check prices in $checktime minutes.
 							sleep $checkseconds
