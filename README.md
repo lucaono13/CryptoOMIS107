@@ -1,4 +1,4 @@
-# CryptoOMIS108
+# CryptoOMIS107
 
 Project for Systems Programming to create a Cryptotrading program based on the Cryptowatch program found here: https://github.com/alexanderepstein/cryptowatch
 
